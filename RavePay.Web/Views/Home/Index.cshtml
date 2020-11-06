@@ -1,0 +1,154 @@
+﻿@{
+    ViewData["Title"] = "Pay with Flutterwave";
+}
+
+<div class="py-2 text-center">
+    <img class="d-block mx-auto mb-4" src="http://markdevthoughts.net/wp-content/uploads/2020/10/devtlogo.png" alt=""  height="80">
+    <h2>Checkout form</h2>
+    <p class="lead">Below is an example form to be filled to make payment via flutterwave</p>
+</div>
+
+<div class="row">
+    <div class="col-md-4 order-md-2 mb-4">
+        <h4 class="d-flex justify-content-between align-items-center mb-3">
+            <span class="text-muted">Your cart</span>
+            <span class="badge badge-secondary badge-pill">3</span>
+        </h4>
+        <ul class="list-group mb-3">
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+                <div>
+                    <h6 class="my-0">Product name</h6>
+                    <small class="text-muted">Brief description</small>
+                </div>
+                <span class="text-muted">NGN 5,000.00</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+                <div>
+                    <h6 class="my-0">Second product</h6>
+                    <small class="text-muted">Brief description</small>
+                </div>
+                <span class="text-muted">NGN 8,000.00</span>
+            </li>
+            <li class="list-group-item d-flex justify-content-between lh-condensed">
+                <div>
+                    <h6 class="my-0">Third item</h6>
+                    <small class="text-muted">Brief description</small>
+                </div>
+                <span class="text-muted">NGN 5,999.9</span>
+            </li>
+           
+            <li class="list-group-item d-flex justify-content-between">
+                <span>Total (NGN)</span>
+                <strong>18,999.9</strong>
+                <input type="hidden" value="18999.9" id="totalAmount"/>
+            </li>
+        </ul>
+    </div>
+    <div class="col-md-8 order-md-1">
+        <h4 class="mb-3">Billing address</h4>
+        
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="firstName">First name</label>
+                    <input type="text" class="form-control" id="firstName" placeholder="" value="" required="">
+                 
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="lastName">Last name</label>
+                    <input type="text" class="form-control" id="lastName" placeholder="" value="" required="">
+                   
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="email">Email</label>
+                <input type="email" class="form-control" id="email" placeholder="you@example.com">
+            </div>
+
+
+            <div class="mb-3">
+                <label for="telephone">Telephone</label>
+                <input type="text" class="form-control" id="telephone">
+            </div>
+
+            <div class="mb-3">
+                <label for="address">Address</label>
+                <input type="text" class="form-control" id="address" placeholder="1234 Main St" required="">
+
+            </div>
+
+
+            
+            <hr class="mb-4">
+            <button id="checkoutBtn" class="btn btn-primary btn-lg btn-block" type="submit">Continue to checkout</button>
+        
+    </div>
+</div>
+
+<form id="payform" method="get">
+
+</form>
+
+@section scripts{ 
+
+    <script>
+
+        function checkOut(data) {
+            return $.ajax({
+                type: "POST",
+                url: "@Url.Action("transactioninit","home")",
+                data: JSON.stringify(data),
+                contentType: 'application/json; charset=utf-8',
+                dataType: 'json'
+            });
+        }
+
+        $(function () {
+
+            $("#checkoutBtn").click(function (e) {
+
+                e.preventDefault();
+
+                var $self = $(this);
+
+                $self.attr('disabled', true).html('Please wait...');
+
+                $('input[type=text]').attr('disabled', true);
+
+                var data = {
+                    customerName: $.trim($("#firstName").val()) + ' ' + $.trim($("#lastName").val()),
+                    email: $.trim($("#email").val()),
+                    phone: $.trim($("#telephone").val()),
+                    address: $.trim($("#address").val()),
+                    amount: $.trim($("#totalAmount").val())
+                }
+
+                $.when(checkOut(data)).then(function (response) {
+
+                    if (response.status == "success") {
+
+                        var link = response.data.link;
+
+                        var $form = $("#payform");
+
+                        $form.attr("action", link).submit();
+                    }
+
+                }).fail(function (err) {
+                    $self.attr('disabled', false).html('Continue to checkout');
+
+                    $('input[type=text]').attr('disabled', false);
+
+                });
+
+
+
+
+            });
+
+            
+        })
+
+    </script>
+
+}
